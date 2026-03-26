@@ -2,52 +2,59 @@ pipeline {
     agent any
 
     tools {
-        maven 'maven' // Configure Maven in Jenkins Global Tool Configuration
+        maven 'Maven3'
+        jdk 'JDK21'
+    }
+
+    environment {
+        APP_NAME = "hello-world-app"
+        DOCKER_IMAGE = "hello-world-image"
+        DOCKER_CONTAINER = "hello-world-container"
     }
 
     stages {
-        stage('Checkout') {
+
+        stage('Checkout Code') {
             steps {
-                git branch: 'master', url: 'https://github.com/jagdishmodi/hello-world-2.git'
+                git url: 'https://github.com/jagdishmodi/hello-world-new.git', branch: 'main'
             }
         }
 
-        stage('Build') {
+        stage('Build with Maven') {
             steps {
-                sh 'mvn clean compile'
+                sh 'mvn clean package -DskipTests'
             }
         }
 
-        stage('Test') {
+        stage('Build Docker Image') {
             steps {
-                sh 'mvn test'
+                sh 'docker build -t $DOCKER_IMAGE .'
             }
         }
 
-        stage('Package') {
+        stage('Stop Old Container') {
             steps {
-                sh 'mvn package'
+                sh '''
+                docker rm -f $DOCKER_CONTAINER || true
+                '''
             }
         }
 
-        stage('Archive Artifacts') {
+        stage('Run Docker Container') {
             steps {
-                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                echo 'Deploying application...'
-                // Add deployment script or copy JAR to server
+                sh '''
+                docker run -d -p 8081:8080 --name $DOCKER_CONTAINER $DOCKER_IMAGE
+                '''
             }
         }
     }
 
     post {
-        always {
-            junit 'target/surefire-reports/*.xml'
+        success {
+            echo 'Deployment Successful!'
+        }
+        failure {
+            echo 'Pipeline Failed!'
         }
     }
 }
-

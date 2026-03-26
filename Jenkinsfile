@@ -16,7 +16,7 @@ pipeline {
 
         stage('Checkout Code') {
             steps {
-                git url: 'https://github.com/jagdishmodi/hello-world-new.git', branch: 'main'
+                git url: 'https://github.com/jagdishmodi/hello-world-new.git', branch: 'master'
             }
         }
 

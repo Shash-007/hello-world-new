@@ -1,0 +1,8 @@
+replicaCount: 2
+image:
+  repository: image-registry.openshift-image-registry.svc:5000/cicd-lab/hello-world
+  tag: latest
+service:
+  port: 8080
+route:
+  enabled: true
